@@ -1,3 +1,6 @@
+import { Ship } from "/src/ship";
+import { InputHandler} from "/src/input";
+
 const source = document.createElement('canvas')
 assignAttributes(source, {
   id: 'source',
@@ -9,7 +12,9 @@ document.body.appendChild(source)
 const context = source.getContext('2d', {alpha: 'false'})
 let changeDirection = false;
 let isGameOver = false;
-
+let ship = new Ship(window.innerWidth, window.innerHeight);
+new InputHandler(ship);
+let lastTime = 0;
 //create bricks
 const invaderArray = []
 
@@ -46,6 +51,10 @@ for (let row = 1; row <= 5; row++){
 }
 
 const gameLoop = setInterval(() => {
+    let deltaTime = timestamp - lastTime;
+    lastTime = timestamp;
+    ship.Update(deltaTime);
+    ship.Draw(ctx);
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     context.fillStyle = 'black';
     context.fillRect(0, 0, window.innerWidth, window.innerHeight);
