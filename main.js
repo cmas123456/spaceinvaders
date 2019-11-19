@@ -8,6 +8,7 @@ document.body.appendChild(source)
 
 const context = source.getContext('2d', {alpha: 'false'})
 let changeDirection = false;
+let isGameOver = false;
 
 //create bricks
 const invaderArray = []
@@ -43,35 +44,8 @@ for (let row = 1; row <= 5; row++){
   }
   invaderArray.push(rowArray);
 }
-// for (let index = 1; index <= 5; index++){
-//     const invader = {
-//         origin: [
-//             ((window.innerWidth / 10) * index ) - ((window.innerWidth / 20) / 2),
-// 			(window.innerHeight / 20)
-//         ],
-//         health: 2,
-//         dimensions: [
-//             window.innerWidth / 20,
-//             window.innerHeight / 40
-//         ],
-//         color: () => {
-//           switch(invader.health) {
-//           case 2:
-//             return 'green'
-//           case 1: 
-//             return 'red'
-//           case 0:
-//             return 'black'
-//           default:
-//           return 'green'
 
-//           }
-//         }
-//    }
-//   invaderArray.push(invader);
-// }
-
-setInterval(() => {
+const gameLoop = setInterval(() => {
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     context.fillStyle = 'black';
     context.fillRect(0, 0, window.innerWidth, window.innerHeight);
@@ -103,31 +77,35 @@ invaderArray.forEach(row => {
     if (willFlip === true && alien.isForward === true){
       alien.isForward = false;
       alien.origin[1] += 10;
+      if (alien.origin[1] > window.innerHeight * .7){
+        context.fillStyle = 'white'
+        context.font = '30px Georgia'
+        context.fillText('New High Score = INSERT SCORE HERE', window.innerWidth * .2, window.innerHeight * .3)
+        clearInterval(gameLoop);
+      }
     }
     else if (willFlip === true && alien.isForward === false){
       alien.isForward = true;
       alien.origin[1] += 10;
+      if (alien.origin[1] > window.innerHeight * .7){
+        context.fillStyle = 'white'
+        context.font = '30px Georgia'
+        context.fillText('New High Score = INSERT SCORE HERE', window.innerWidth *.2, window.innerHeight * .3)
+        clearInterval(gameLoop);
+      }
     }
 
   })
 })
+if (isGameOver === true){
+  clearInterval(gameLoop);
+}
 willFlip = false;
-// })
-// invaderArray.forEach(ele => {
-//         if (ele.origin[0] < 10){
-//         	isForward = true;
-//         	invaderArray.forEach(ele => {
-//         	ele.origin[1] += 10;
-//         	})
-//         }
-//         if (ele.origin[0] > window.innerWidth - 100){
-//         	isForward = false;
-//         	invaderArray.forEach(ele => {
-//         	ele.origin[1] += 10;
-//         	})
-//         }
-  // }
 },100)
+
+context.fillStyle = 'white'
+context.font = '20px Georgia'
+context.fillText('New High Score = INSERT SCORE HERE', 30, 20)
     
 
 function assignAttributes(element, attributes) {
