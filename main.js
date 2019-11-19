@@ -79,8 +79,8 @@ invaderArray.forEach(row => {
       alien.origin[1] += 10;
       if (alien.origin[1] > window.innerHeight * .7){
         context.fillStyle = 'white'
-        context.font = '30px Georgia'
-        context.fillText('New High Score = INSERT SCORE HERE', window.innerWidth * .2, window.innerHeight * .3)
+        context.font = '20px Georgia'
+        context.fillText('New High Score = INSERT SCORE HERE', 10, 30)
         clearInterval(gameLoop);
       }
     }
@@ -89,8 +89,8 @@ invaderArray.forEach(row => {
       alien.origin[1] += 10;
       if (alien.origin[1] > window.innerHeight * .7){
         context.fillStyle = 'white'
-        context.font = '30px Georgia'
-        context.fillText('New High Score = INSERT SCORE HERE', window.innerWidth *.2, window.innerHeight * .3)
+        context.font = '20px Georgia'
+        context.fillText('New High Score = INSERT SCORE HERE', 10, 30)
         clearInterval(gameLoop);
       }
     }
@@ -102,11 +102,6 @@ if (isGameOver === true){
 }
 willFlip = false;
 },100)
-
-context.fillStyle = 'white'
-context.font = '20px Georgia'
-context.fillText('New High Score = INSERT SCORE HERE', 30, 20)
-    
 
 function assignAttributes(element, attributes) {
 	Object.keys(attributes).forEach(key => element.setAttribute(key, attributes[key]))
