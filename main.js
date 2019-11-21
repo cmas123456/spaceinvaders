@@ -15,7 +15,6 @@ let changeDirection = false;
 let isGameOver = false;
 //create bricks
 let invaderArray = [];
-let invaderArray2 = [];
 let bulletArray = [];
 let ship = {};
 let shipCreate = (() => {
@@ -196,20 +195,18 @@ function drawObjects() {
   bulletArray.forEach(bullet => {
     bullet.origin[1] += bullet.projectileSpeed;
     bullet.Draw();
-    if (bullet.origin[1] <= 50) {
-      bullet.markedForDeletion = true;
-    }
   let leftX = bullet.origin[0];
   let rightX = bullet.origin[0] + bullet.dimensions[0];
   let topY = bullet.origin[1];
   let bottomY = bullet.origin[1] + bullet.dimensions[1];
-  if (
-    checkWithinObject(leftX, topY) ||
-    checkWithinObject(leftX, bottomY) ||
-    checkWithinObject(rightX, topY) ||
-    checkWithinObject(rightX, bottomY)
-  ) {
-     bullet.markedForDeletion = true;
+    if ((checkWithinObject(leftX, topY)) 
+    || (checkWithinObject(leftX, bottomY)) 
+    || (checkWithinObject(rightX, topY)) 
+    || (checkWithinObject(rightX, bottomY))) {
+      bullet.markedForDeletion = true;
+    }
+    if (bullet.origin[1] <= 50) {
+      bullet.markedForDeletion = true;
     }
   })
   invaderArray.forEach(row => {
@@ -217,50 +214,8 @@ function drawObjects() {
       alien.Draw();
     })
   })
-  // invaderArray.forEach(row => {
-  //   row.forEach(alien => {
-  //     // alien.Draw();
-  //     if (willFlip === true && alien.isForward === true){
-  //       alien.isForward = false;
-  //       alien.origin[1] += 10;
-  //     } else if (willFlip === true && alien.isForward === false){
-  //       alien.isForward = true;
-  //       alien.origin[1] += 10;
-  //       }
-  //   })
-  // })
-  // willFlip = false;
   ship.Draw();
 };
-// function moveInvaders() {
-//   invaderArray.forEach(row => {
-//     row.forEach(alien => {
-//       if (willFlip === true && alien.isForward === true){
-//         alien.isForward = false;
-//         alien.origin[1] += 10;
-//         if (alien.origin[1] > window.innerHeight * .7){
-//           context.fillStyle = 'white'
-//           context.font = '20px Georgia'
-//           context.fillText('New High Score = INSERT SCORE HERE', 10, 30)
-//           clearInterval(gameLoop);
-//         }
-//       }
-//       else if (willFlip === true && alien.isForward === false){
-//         alien.isForward = true;
-//         alien.origin[1] += 10;
-
-//         if (alien.origin[1] > window.innerHeight * .7){
-//           context.fillStyle = 'white'
-//           context.font = '20px Georgia'
-//           context.fillText('New High Score = INSERT SCORE HERE', 10, 30)
-//           clearInterval(gameLoop);
-//         }
-//       }
-  
-//     })
-//   })
-//   willFlip = false;
-// }
 function deleteObjects() {
   bulletArray = bulletArray.filter(
     bullet => !bullet.markedForDeletion);
@@ -287,23 +242,24 @@ function deleteObjects() {
 //   })
 // }
 function checkWithinObject(pointX, pointY) {
+  let isWithinSomething = false;
   invaderArray.forEach(row => {
     row.forEach (alien => {
       let topOfObject = alien.origin[1];
       let bottomOfObject = alien.origin[1] + alien.dimensions[1];
       let leftSideOfObject = alien.origin[0];
       let rightSideOfObject = alien.origin[0] + alien.dimensions[0];
-      if (
-        pointY >= topOfObject &&
-        pointY <= bottomOfObject &&
-        pointX >= leftSideOfObject &&
-        pointX <= rightSideOfObject
-      ) {
+      if ((pointY >= topOfObject) 
+       && (pointY <= bottomOfObject) 
+       && (pointX >= leftSideOfObject) 
+       && (pointX <= rightSideOfObject)) 
+       {
         alien.markedForDeletion = true;
-        console.log(alien);
-      }
+        isWithinSomething = true;
+       } 
     })
   }) 
+  return isWithinSomething;
 }
 function assignAttributes(element, attributes) {
 	Object.keys(attributes).forEach(key => element.setAttribute(key, attributes[key]))
