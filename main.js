@@ -11,6 +11,7 @@ const shipImage = document.getElementById('img_ship');
 const alienImage1 = document.getElementById('img_redaliendown');
 const alienImage2 = document.getElementById('img_redalienup');
 const bulletImage = document.getElementById('img_bullet');
+const gameover = document.getElementById('img_gameover');
 let changeDirection = false;
 let isGameOver = false;
 let willFlip = false;
@@ -135,7 +136,7 @@ let invaderCreate = (() => {
         },
         bulletCreate() {
           const bullet = {
-            origin: [invader.origin[0] + invader.dimensions[0] / 2 - 5, (invader.origin[1] - 5)],
+            origin: [invader.origin[0] + invader.dimensions[0] / 2, (invader.origin[1]) + 5],
             dimensions: [10,10],
             projectileSpeed: 5,
             markedForDeletion: false,
@@ -239,6 +240,16 @@ function drawObjects() {
   invaderBulletArray.forEach(bullet => {
     bullet.origin[1] += bullet.projectileSpeed;
     bullet.Draw();
+    let leftX = bullet.origin[0];
+    let rightX = bullet.origin[0] + bullet.dimensions[0];
+    let topY = bullet.origin[1];
+    let bottomY = bullet.origin[1] + bullet.dimensions[1];
+    if ((checkWithinShip(leftX, topY)) 
+    || (checkWithinShip(leftX, bottomY)) 
+    || (checkWithinShip(rightX, topY)) 
+    || (checkWithinShip(rightX, bottomY))) {
+      bullet.markedForDeletion = true;
+    }
     if (bullet.origin[1] > window.innerHeight - 100){
       bullet.markedForDeletion = true;
     }
@@ -309,6 +320,48 @@ function checkWithinObject(pointX, pointY) {
   }) 
   return isWithinSomething;
 }
+// function shiftCanShoot() {
+//   for (let row = 0; row < invaderArray.length; row++){
+//     for (let alien = 0; alien < invaderArray[row].length; alien ++) {
+//         if (invaderArray[row][alien].markedForDeletion === true) {
+//           let originx = invaderArray[row][alien].origin[0];
+//           let originy = invaderArray[row][alien].origin[1] - 10;
+//           invaderArray.forEach(row => {
+//             row.forEach(alien => {
+//               if (alien.origin[1] === originy && alien.origin[0] === originx){
+//                 alien.canShoot = true;
+//               }
+//             })
+//           })
+//         }
+//     }
+//   }
+// }
+
+function checkWithinShip(pointX, pointY) {
+  let isWithinSomething = false;
+  let topOfObject = ship.origin[1];
+  let bottomOfObject = ship.origin[1] + ship.dimensions[1];
+  let leftSideOfObject = ship.origin[0];
+  let rightSideOfObject = ship.origin[0] + ship.dimensions[0];
+      if ((pointY >= topOfObject) 
+       && (pointY <= bottomOfObject) 
+       && (pointX >= leftSideOfObject) 
+       && (pointX <= rightSideOfObject)){
+        ship.health -= 1;
+        if (ship.health <= 0){
+          isGameOver = true;
+        }
+        isWithinSomething = true;
+       }
+  return isWithinSomething; 
+}
+function gameOver() {
+  if (ship.health <= 0) {
+    isGameOver = true;
+    // clearInterval(gameLoop);
+  }
+}
 function assignAttributes(element, attributes) {
 	Object.keys(attributes).forEach(key => element.setAttribute(key, attributes[key]))
 }
@@ -316,10 +369,16 @@ function assignAttributes(element, attributes) {
 let gameLoop = (() => {
   const gameLoop = setInterval(() => {
     drawBackground();
-    controlShip();
     drawObjects();
-    invadersShoot();
-    deleteObjects();
+    controlShip();
     moveInvaders();
+    invadersShoot();
+    // shiftCanShoot();
+    deleteObjects();
+    gameOver();
+    if (isGameOver){
+      context.drawImage(gameover,0,0, window.innerWidth, window.innerHeight);
+      clearInterval(gameLoop);
+    }
   },1000/60)
 })();
