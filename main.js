@@ -219,11 +219,9 @@ function drawObjects() {
 function deleteObjects() {
   bulletArray = bulletArray.filter(
     bullet => !bullet.markedForDeletion);
-  invaderArray = invaderArray.filter(row => {
-    row = row.filter(alien => !alien.markedForDeletion);
-    if (row.length !== 0)
-      return row;
-  })
+  for (let i = 0; i < invaderArray.length; i++){
+    invaderArray[i] = invaderArray[i].filter(invader => !invader.markedForDeletion);
+  }
 }
 // function detectCollision() {
 //   bulletArray.forEach (bullet => {
