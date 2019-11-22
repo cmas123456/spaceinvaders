@@ -13,9 +13,11 @@ const alienImage2 = document.getElementById('img_redalienup');
 const bulletImage = document.getElementById('img_bullet');
 let changeDirection = false;
 let isGameOver = false;
+let willFlip = false;
 //create bricks
 let invaderArray = [];
 let bulletArray = [];
+let invaderBulletArray = [];
 let ship = {};
 let shipCreate = (() => {
   ship = {
@@ -111,12 +113,14 @@ let invaderCreate = (() => {
         ],
         health: 2,
         counter: 0,
+        speedModifier: 0,
         image: alienImage1,
         dimensions: [
           window.innerWidth / 50,
           window.innerHeight / 30,
         ],
         markedForDeletion: false,
+        canShoot: false,
         color: () => {
           switch(invader.health){
             case 2:
@@ -129,6 +133,21 @@ let invaderCreate = (() => {
               return 'green'
           }
         },
+        bulletCreate() {
+          const bullet = {
+            origin: [invader.origin[0] + invader.dimensions[0] / 2 - 5, (invader.origin[1] - 5)],
+            dimensions: [10,10],
+            projectileSpeed: 5,
+            markedForDeletion: false,
+            image: bulletImage,
+            Draw() {
+              context.drawImage(bullet.image, bullet.origin[0], bullet.origin[1], bullet.dimensions[0], bullet.dimensions[1]);
+            }
+      
+          }
+          if (invaderBulletArray.length < 5)
+          invaderBulletArray.push(bullet);
+        },
         Draw() {
           if (invader.counter === 0){
             invader.image = alienImage1;
@@ -138,40 +157,48 @@ let invaderCreate = (() => {
             invader.counter = -60;
           }
           context.drawImage(invader.image, invader.origin[0], invader.origin[1], invader.dimensions[0], invader.dimensions[1]); 
-          if (invader.isForward){
-            invader.origin[0] += 1;
-            invader.counter++;
-            if (invader.origin[0] > window.innerWidth - 100){
-              invader.origin[0] -= 1;
-              invaderArray.forEach(row => {
-                row.forEach(alien => {
-                  alien.isForward = false;
-                  alien.origin[1] += 10;
-                })
-              })
-            }
+      },
+      Move(){
+        if (invader.isForward){
+          invader.origin[0] += 1 + this.speedModifier;
+          invader.counter++;
+          if (invader.origin[0] > window.innerWidth - 100){
+            willFlip = true;
           }
-          else if (!invader.isForward){
-            invader.origin[0] -= 1;
-            invader.counter++;
-            if (invader.origin[0] < 10) {
-              invaderArray.forEach(row => {
-                row.forEach(alien => {
-                  alien.isForward = true;
-                  alien.origin[1] += 10;
-                })
-              })
-            }    
-         }
+        }
+        else if (!invader.isForward){
+          invader.origin[0] -= 1 + this.speedModifier;
+          invader.counter++;
+          if (invader.origin[0] < 10) {
+            willFlip = true;
+          }    
+       }
+      },
+      Shift(){
+        if (invader.isForward){
+          invader.isForward = false;
+          invader.origin[1] += 10;
+          invader.speedModifier += .2;
+        }
+        else if (!invader.isForward){
+          invader.isForward = true;
+          invader.origin[1] += 10;
+          invader.speedModifier += .2;
+        }
       },
         isForward: true
+      }
+      if (row === 5) {
+        invader.canShoot = true;
       }
       rowArray.push(invader);
     }
     invaderArray.push(rowArray);
   }
 })();
-
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
 function drawBackground() {
   context.clearRect(0, 0, window.innerWidth, window.innerHeight);
   context.fillStyle = 'black';
@@ -184,12 +211,7 @@ function drawBullets() {
   bulletArray.forEach (bullet => {
     context.drawImage(bullet.image, bullet.origin[0], bullet.origin[1], bullet.dimensions[0], bullet.dimensions[1])
     bullet.origin[1] += bullet.projectileSpeed;
-    // if (bullet.origin[1] <= 50){
-    //   bullet.markedForDeletion = true;
-    // }
   })
-  bulletArray = bulletArray.filter(
-    bullet => !bullet.markedForDeletion);
 }
 function drawObjects() {
   bulletArray.forEach(bullet => {
@@ -214,6 +236,13 @@ function drawObjects() {
       alien.Draw();
     })
   })
+  invaderBulletArray.forEach(bullet => {
+    bullet.origin[1] += bullet.projectileSpeed;
+    bullet.Draw();
+    if (bullet.origin[1] > window.innerHeight - 100){
+      bullet.markedForDeletion = true;
+    }
+  })
   ship.Draw();
 };
 function deleteObjects() {
@@ -222,23 +251,44 @@ function deleteObjects() {
   for (let i = 0; i < invaderArray.length; i++){
     invaderArray[i] = invaderArray[i].filter(invader => !invader.markedForDeletion);
   }
+  invaderBulletArray = invaderBulletArray.filter(
+    bullet => !bullet.markedForDeletion);
+  
 }
-// function detectCollision() {
-//   bulletArray.forEach (bullet => {
-//   let leftX = bullet.origin[0];
-//   let rightX = bullet.origin[0] + bullet.dimensions[0];
-//   let topY = bullet.origin[1];
-//   let bottomY = bullet.origin[1] + bullet.dimensions[1];
-//   if (
-//     checkWithinObject(leftX, topY) ||
-//     checkWithinObject(leftX, bottomY) ||
-//     checkWithinObject(rightX, topY) ||
-//     checkWithinObject(rightX, bottomY)
-//    ) {
-//      bullet.markedForDeletion = true;
-//    }
-//   })
-// }
+function invadersShoot() {
+  invaderArray.forEach(row => {
+    row.forEach(alien => {
+      if (alien.canShoot === true) {
+        if (getRandomInt(100) >= 99)
+        alien.bulletCreate();
+      }
+    })
+  })
+}
+function controlShip() {
+  ship.Move();  
+  if (bulletArray.length === 0){
+    ship.canShoot = true;
+  }
+  if (ship.hasFired && bulletArray.length === 0) {
+    ship.bulletCreate();
+  }
+}
+function moveInvaders() {
+  invaderArray.forEach(row => {
+    row.forEach(alien => {
+      alien.Move();
+    })
+  })
+  if (willFlip === true) {
+    invaderArray.forEach(row => {
+      row.forEach(alien => {
+        alien.Shift();     
+      })
+    })
+  }
+  willFlip = false;
+}
 function checkWithinObject(pointX, pointY) {
   let isWithinSomething = false;
   invaderArray.forEach(row => {
@@ -266,19 +316,10 @@ function assignAttributes(element, attributes) {
 let gameLoop = (() => {
   const gameLoop = setInterval(() => {
     drawBackground();
-    ship.Move();  
-    if (bulletArray.length === 0){
-      ship.canShoot = true;
-    }
-    if (ship.hasFired && bulletArray.length === 0) {
-      ship.bulletCreate();
-    }
+    controlShip();
     drawObjects();
+    invadersShoot();
     deleteObjects();
-    // moveInvaders();
-    // drawBullets();
-    // ship.Draw();
-    // detectCollision();
-    // drawInvaders();
+    moveInvaders();
   },1000/60)
 })();
