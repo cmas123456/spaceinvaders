@@ -157,7 +157,8 @@ let invaderCreate = (() => {
             invader.image = alienImage2;
             invader.counter = -60;
           }
-          context.drawImage(invader.image, invader.origin[0], invader.origin[1], invader.dimensions[0], invader.dimensions[1]); 
+          if (invader.markedForDeletion === false)
+            context.drawImage(invader.image, invader.origin[0], invader.origin[1], invader.dimensions[0], invader.dimensions[1]); 
       },
       Move(){
         if (invader.isForward){
@@ -259,12 +260,19 @@ function drawObjects() {
 function deleteObjects() {
   bulletArray = bulletArray.filter(
     bullet => !bullet.markedForDeletion);
-  for (let i = 0; i < invaderArray.length; i++){
-    invaderArray[i] = invaderArray[i].filter(invader => !invader.markedForDeletion);
-  }
   invaderBulletArray = invaderBulletArray.filter(
-    bullet => !bullet.markedForDeletion);
-  
+    bullet => !bullet.markedForDeletion);  
+}
+function shiftCanShoot() {
+  for (let alien = 0; alien < 11; alien++){
+    for (let i = 4; i >= 0; i--){
+      if (invaderArray[i][alien].markedForDeletion === true){
+        if ((i - 1) >= 0){
+          invaderArray[i - 1][alien].canShoot = true;
+        } else break;
+      }
+    }
+  }
 }
 function invadersShoot() {
   invaderArray.forEach(row => {
@@ -302,42 +310,31 @@ function moveInvaders() {
 }
 function checkWithinObject(pointX, pointY) {
   let isWithinSomething = false;
-  invaderArray.forEach(row => {
-    row.forEach (alien => {
-      let topOfObject = alien.origin[1];
-      let bottomOfObject = alien.origin[1] + alien.dimensions[1];
-      let leftSideOfObject = alien.origin[0];
-      let rightSideOfObject = alien.origin[0] + alien.dimensions[0];
-      if ((pointY >= topOfObject) 
-       && (pointY <= bottomOfObject) 
-       && (pointX >= leftSideOfObject) 
-       && (pointX <= rightSideOfObject)) 
-       {
-        alien.markedForDeletion = true;
-        isWithinSomething = true;
-       } 
-    })
-  }) 
+  if (pointY < ship.origin[1]){
+    invaderArray.forEach(row => {
+      row.forEach (alien => {
+        let topOfObject = alien.origin[1];
+        let bottomOfObject = alien.origin[1] + alien.dimensions[1];
+        let leftSideOfObject = alien.origin[0];
+        let rightSideOfObject = alien.origin[0] + alien.dimensions[0];
+        if ((pointY >= topOfObject) 
+         && (pointY <= bottomOfObject) 
+         && (pointX >= leftSideOfObject) 
+         && (pointX <= rightSideOfObject)) 
+         {
+           if (alien.markedForDeletion === true){
+             return false;
+           }
+          alien.markedForDeletion = true;
+          alien.canShoot = false;
+          isWithinSomething = true;
+          shiftCanShoot();
+         } 
+      })
+    }) 
+  }
   return isWithinSomething;
 }
-// function shiftCanShoot() {
-//   for (let row = 0; row < invaderArray.length; row++){
-//     for (let alien = 0; alien < invaderArray[row].length; alien ++) {
-//         if (invaderArray[row][alien].markedForDeletion === true) {
-//           let originx = invaderArray[row][alien].origin[0];
-//           let originy = invaderArray[row][alien].origin[1] - 10;
-//           invaderArray.forEach(row => {
-//             row.forEach(alien => {
-//               if (alien.origin[1] === originy && alien.origin[0] === originx){
-//                 alien.canShoot = true;
-//               }
-//             })
-//           })
-//         }
-//     }
-//   }
-// }
-
 function checkWithinShip(pointX, pointY) {
   let isWithinSomething = false;
   let topOfObject = ship.origin[1];
@@ -373,7 +370,6 @@ let gameLoop = (() => {
     controlShip();
     moveInvaders();
     invadersShoot();
-    // shiftCanShoot();
     deleteObjects();
     gameOver();
     if (isGameOver){
@@ -381,4 +377,4 @@ let gameLoop = (() => {
       clearInterval(gameLoop);
     }
   },1000/60)
-})();
+})()
