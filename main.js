@@ -38,7 +38,7 @@ let shipCreate = (() => {
         return 'green'
     }
   },
-  maxSpeed: 2,
+  maxSpeed: 3,
   horizontalSpeed: 0,
   hasFired: false,
   canShoot: true,
@@ -265,10 +265,10 @@ function deleteObjects() {
 }
 function shiftCanShoot() {
   for (let alien = 0; alien < 11; alien++){
-    for (let i = 4; i >= 0; i--){
-      if (invaderArray[i][alien].markedForDeletion === true){
-        if ((i - 1) >= 0){
-          invaderArray[i - 1][alien].canShoot = true;
+    for (let row = 4; row >= 0; row--){
+      if (invaderArray[row][alien].markedForDeletion === true && invaderArray[row][alien].canShoot === true){
+        if ((row - 1) >= 0){
+          invaderArray[row - 1][alien].canShoot = true;
         } else break;
       }
     }
@@ -277,7 +277,7 @@ function shiftCanShoot() {
 function invadersShoot() {
   invaderArray.forEach(row => {
     row.forEach(alien => {
-      if (alien.canShoot === true) {
+      if (alien.canShoot === true && alien.markedForDeletion === false) {
         if (getRandomInt(100) >= 99)
         alien.bulletCreate();
       }
@@ -326,7 +326,6 @@ function checkWithinObject(pointX, pointY) {
              return false;
            }
           alien.markedForDeletion = true;
-          alien.canShoot = false;
           isWithinSomething = true;
           shiftCanShoot();
          } 
@@ -367,6 +366,7 @@ let gameLoop = (() => {
   const gameLoop = setInterval(() => {
     drawBackground();
     drawObjects();
+    shiftCanShoot();
     controlShip();
     moveInvaders();
     invadersShoot();
