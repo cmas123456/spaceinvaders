@@ -39,9 +39,10 @@ let shipCreate = (() => {
     }
   },
   maxSpeed: 3,
-  horizontalSpeed: 0,
+  horizontalSpeed: 0, 
   hasFired: false,
   canShoot: true,
+  shipsKilled: 0,
   Move() {
     this.origin[0] += this.horizontalSpeed;
   },
@@ -165,6 +166,7 @@ let invaderCreate = (() => {
           invader.origin[0] += 1 + this.speedModifier;
           invader.counter++;
           if (invader.origin[0] > window.innerWidth - 100){
+            if (!invader.markedForDeletion)
             willFlip = true;
           }
         }
@@ -172,6 +174,7 @@ let invaderCreate = (() => {
           invader.origin[0] -= 1 + this.speedModifier;
           invader.counter++;
           if (invader.origin[0] < 10) {
+            if (!invader.markedForDeletion)
             willFlip = true;
           }    
        }
@@ -325,6 +328,8 @@ function checkWithinObject(pointX, pointY) {
            if (alien.markedForDeletion === true){
              return false;
            }
+           ship.shipsKilled++;
+           console.log(ship.shipsKilled);
           alien.markedForDeletion = true;
           isWithinSomething = true;
           shiftCanShoot();
@@ -372,8 +377,25 @@ let gameLoop = (() => {
     invadersShoot();
     deleteObjects();
     gameOver();
+    if (ship.shipsKilled >= 55){
+      context.rect(0, 0, window.innerWidth, window.innerHeight);
+      context.fillStyle = "rgba(0,0,0,0.5)";
+      context.fill();
+
+      context.font = "30px Helvetica";
+      context.fillStyle = "white";
+      context.textAlign = "center";
+      context.fillText("VICTORY", window.innerWidth / 2, window.innerHeight / 2);
+      clearInterval(gameLoop);
+    }
     if (isGameOver){
-      context.drawImage(gameover,0,0, window.innerWidth, window.innerHeight);
+      context.rect(0, 0, window.innerWidth, window.innerHeight);
+      context.fillStyle = "rgba(0,0,0,0.5)";
+      context.fill();
+      context.font = "30px Helvetica";
+      context.fillStyle = "white";
+      context.textAlign = "center";
+      context.fillText("GAME OVER", window.innerWidth / 2, window.innerHeight / 2);
       clearInterval(gameLoop);
     }
   },1000/60)
